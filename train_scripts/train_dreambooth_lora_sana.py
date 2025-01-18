@@ -518,6 +518,7 @@ def parse_args(input_args=None):
     )
     parser.add_argument("--max_grad_norm", default=1.0, type=float, help="Max gradient norm.")
     parser.add_argument("--push_to_hub", action="store_true", help="Whether or not to push the model to the Hub.")
+    parser.add_argument("--save_local", action="store_true", help="Whether or not to save model locally.")
     parser.add_argument("--hub_token", type=str, default=None, help="The token to use to push to the Model Hub.")
     parser.add_argument(
         "--hub_model_id",
@@ -1510,6 +1511,15 @@ def main(args):
                 is_final_validation=True,
             )
 
+        if args.save_local:
+            save_model_card(
+                repo_id,
+                images=images,
+                base_model=args.pretrained_model_name_or_path,
+                instance_prompt=args.instance_prompt,
+                validation_prompt=args.validation_prompt,
+                repo_folder=args.output_dir,
+            )
         if args.push_to_hub:
             save_model_card(
                 repo_id,
