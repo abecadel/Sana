@@ -1512,9 +1512,17 @@ def main(args):
             )
 
         if args.save_local:
-        if args.push_to_hub:
             save_model_card(
                 "local_lora_name",
+                images=images,
+                base_model=args.pretrained_model_name_or_path,
+                instance_prompt=args.instance_prompt,
+                validation_prompt=args.validation_prompt,
+                repo_folder=args.output_dir,
+            )
+        if args.push_to_hub:
+            save_model_card(
+                repo_id=repo_id,
                 images=images,
                 base_model=args.pretrained_model_name_or_path,
                 instance_prompt=args.instance_prompt,
