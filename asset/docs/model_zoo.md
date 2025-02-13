@@ -1,16 +1,21 @@
 ## 🔥 1. We provide all the links of Sana pth and diffusers safetensor below
 
-| Model     | Reso   | pth link                                                                                                | diffusers                                                                                                                                         | Precision     | Description    |
-|-----------|--------|---------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|---------------|----------------|
-| Sana-0.6B | 512px  | [Sana_600M_512px](https://huggingface.co/Efficient-Large-Model/Sana_600M_512px)                         | [Efficient-Large-Model/Sana_600M_512px_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_600M_512px_diffusers)                         | fp16/fp32     | Multi-Language |
-| Sana-0.6B | 1024px | [Sana_600M_1024px](https://huggingface.co/Efficient-Large-Model/Sana_600M_1024px)                       | [Efficient-Large-Model/Sana_600M_1024px_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_600M_1024px_diffusers)                       | fp16/fp32     | Multi-Language |
-| Sana-1.6B | 512px  | [Sana_1600M_512px](https://huggingface.co/Efficient-Large-Model/Sana_1600M_512px)                       | [Efficient-Large-Model/Sana_1600M_512px_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_512px_diffusers)                       | fp16/fp32     | -              |
-| Sana-1.6B | 512px  | [Sana_1600M_512px_MultiLing](https://huggingface.co/Efficient-Large-Model/Sana_1600M_512px_MultiLing)   | [Efficient-Large-Model/Sana_1600M_512px_MultiLing_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_512px_MultiLing_diffusers)   | fp16/fp32     | Multi-Language |
-| Sana-1.6B | 1024px | [Sana_1600M_1024px](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)                     | [Efficient-Large-Model/Sana_1600M_1024px_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_diffusers)                     | fp16/fp32     | -              |
-| Sana-1.6B | 1024px | [Sana_1600M_1024px_MultiLing](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_MultiLing) | [Efficient-Large-Model/Sana_1600M_1024px_MultiLing_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_MultiLing_diffusers) | fp16/fp32     | Multi-Language |
-| Sana-1.6B | 1024px | [Sana_1600M_1024px_BF16](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_BF16)           | [Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers)           | **bf16**/fp32 | Multi-Language |
-| Sana-1.6B | 2Kpx   | [Sana_1600M_2Kpx_BF16](https://huggingface.co/Efficient-Large-Model/Sana_1600M_2Kpx_BF16)               | [Efficient-Large-Model/Sana_1600M_2Kpx_BF16_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_2Kpx_BF16_diffusers)               | **bf16**/fp32 | Multi-Language |
-| Sana-1.6B | 4Kpx   | [Sana_1600M_4Kpx_BF16](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16)               | [Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers)               | **bf16**/fp32 | Multi-Language |
+| Model                | Reso   | pth link                                                                                                                    | diffusers                                                                                                                                         | Precision     | Description    |
+|----------------------|--------|-----------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|---------------|----------------|
+| Sana-0.6B            | 512px  | [Sana_600M_512px](https://huggingface.co/Efficient-Large-Model/Sana_600M_512px)                                             | [Efficient-Large-Model/Sana_600M_512px_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_600M_512px_diffusers)                         | fp16/fp32     | Multi-Language |
+| Sana-0.6B            | 1024px | [Sana_600M_1024px](https://huggingface.co/Efficient-Large-Model/Sana_600M_1024px)                                           | [Efficient-Large-Model/Sana_600M_1024px_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_600M_1024px_diffusers)                       | fp16/fp32     | Multi-Language |
+| Sana-1.6B            | 512px  | [Sana_1600M_512px](https://huggingface.co/Efficient-Large-Model/Sana_1600M_512px)                                           | [Efficient-Large-Model/Sana_1600M_512px_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_512px_diffusers)                       | fp16/fp32     | -              |
+| Sana-1.6B            | 512px  | [Sana_1600M_512px_MultiLing](https://huggingface.co/Efficient-Large-Model/Sana_1600M_512px_MultiLing)                       | [Efficient-Large-Model/Sana_1600M_512px_MultiLing_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_512px_MultiLing_diffusers)   | fp16/fp32     | Multi-Language |
+| Sana-1.6B            | 1024px | [Sana_1600M_1024px](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)                                         | [Efficient-Large-Model/Sana_1600M_1024px_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_diffusers)                     | fp16/fp32     | -              |
+| Sana-1.6B            | 1024px | [Sana_1600M_1024px_MultiLing](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_MultiLing)                     | [Efficient-Large-Model/Sana_1600M_1024px_MultiLing_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_MultiLing_diffusers) | fp16/fp32     | Multi-Language |
+| Sana-1.6B            | 1024px | [Sana_1600M_1024px_BF16](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_BF16)                               | [Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers)           | **bf16**/fp32 | Multi-Language |
+| Sana-1.6B            | 1024px | -                                                                                                                           | [mit-han-lab/svdq-int4-sana-1600m](https://huggingface.co/mit-han-lab/svdq-int4-sana-1600m)                                                       | **int4**      | Multi-Language |
+| Sana-1.6B            | 2Kpx   | [Sana_1600M_2Kpx_BF16](https://huggingface.co/Efficient-Large-Model/Sana_1600M_2Kpx_BF16)                                   | [Efficient-Large-Model/Sana_1600M_2Kpx_BF16_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_2Kpx_BF16_diffusers)               | **bf16**/fp32 | Multi-Language |
+| Sana-1.6B            | 4Kpx   | [Sana_1600M_4Kpx_BF16](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16)                                   | [Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers)               | **bf16**/fp32 | Multi-Language |
+| Sana-1.6B            | 4Kpx   | [Sana_1600M_4Kpx_BF16](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16)                                   | [Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers)               | **bf16**/fp32 | Multi-Language |
+| ControlNet           |        |                                                                                                                             |                                                                                                                                                   |               |                |
+| Sana-1.6B-ControlNet | 1Kpx   | [Sana_1600M_1024px_BF16_ControlNet_HED](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px_BF16_ControlNet_HED) | Coming soon                                                                                                                                       | **bf16**/fp32 | Multi-Language |
+| Sana-0.6B-ControlNet | 1Kpx   | [Sana_600M_1024px_ControlNet_HED](https://huggingface.co/Efficient-Large-Model/Sana_600M_1024px_ControlNet_HED)             | Coming soon                                                                                                                                       | fp16/fp32     | -              |
 
 ## ❗ 2. Make sure to use correct precision(fp16/bf16/fp32) for training and inference.
 
@@ -79,7 +84,7 @@ image[0].save('sana.png')
 
 ## ❗ 3. 4K models
 
-4K models need VAE tiling to avoid OOM issue.(24 GPU is recommended)
+4K models need VAE tiling to avoid OOM issue.(16 GPU is recommended)
 
 ```python
 # run `pip install git+https://github.com/huggingface/diffusers` before use Sana in diffusers
@@ -98,8 +103,12 @@ pipe.text_encoder.to(torch.bfloat16)
 
 # for 4096x4096 image generation OOM issue, feel free adjust the tile size
 if pipe.transformer.config.sample_size == 128:
-    pipe.vae.enable_tiling(tile_sample_min_height=1024, tile_sample_min_width=1024)
-
+    pipe.vae.enable_tiling(
+        tile_sample_min_height=1024,
+        tile_sample_min_width=1024,
+        tile_sample_stride_height=896,
+        tile_sample_stride_width=896,
+    )
 prompt = 'a cyberpunk cat with a neon sign that says "Sana"'
 image = pipe(
     prompt=prompt,
@@ -111,4 +120,38 @@ image = pipe(
 )[0]
 
 image[0].save("sana_4K.png")
+```
+
+## ❗ 4. int4 inference
+
+This int4 model is quantized with [SVDQuant-Nunchaku](https://github.com/mit-han-lab/nunchaku). You need first follow the [guidance of installation](https://github.com/mit-han-lab/nunchaku?tab=readme-ov-file#installation) of nunchaku engine, then you can use the following code snippet to perform inference with int4 Sana model.
+
+Here we show the code snippet for SanaPipeline. For SanaPAGPipeline, please refer to the [SanaPAGPipeline](https://github.com/mit-han-lab/nunchaku/blob/main/examples/sana_1600m_pag.py) section.
+
+```python
+import torch
+from diffusers import SanaPipeline
+
+from nunchaku.models.transformer_sana import NunchakuSanaTransformer2DModel
+
+transformer = NunchakuSanaTransformer2DModel.from_pretrained("mit-han-lab/svdq-int4-sana-1600m")
+pipe = SanaPipeline.from_pretrained(
+    "Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers",
+    transformer=transformer,
+    variant="bf16",
+    torch_dtype=torch.bfloat16,
+).to("cuda")
+
+pipe.text_encoder.to(torch.bfloat16)
+pipe.vae.to(torch.bfloat16)
+
+image = pipe(
+    prompt="A cute 🐼 eating 🎋, ink drawing style",
+    height=1024,
+    width=1024,
+    guidance_scale=4.5,
+    num_inference_steps=20,
+    generator=torch.Generator().manual_seed(42),
+).images[0]
+image.save("sana_1600m.png")
 ```

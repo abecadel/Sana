@@ -2,6 +2,10 @@
 # Copyright 2024 NVIDIA CORPORATION & AFFILIATES
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
+#!/usr/bin/env python
+# Copyright 2024 NVIDIA CORPORATION & AFFILIATES
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -19,8 +23,6 @@ from __future__ import annotations
 import argparse
 import os
 import random
-import socket
-import sqlite3
 import time
 import uuid
 from datetime import datetime
@@ -29,12 +31,9 @@ import gradio as gr
 import numpy as np
 import spaces
 import torch
-from PIL import Image
-from torchvision.utils import make_grid, save_image
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-from app import safety_check
-from app.sana_pipeline import SanaPipeline
+from diffusers import SanaPipeline
+from nunchaku.models.transformer_sana import NunchakuSanaTransformer2DModel
+from torchvision.utils import save_image
 
 MAX_SEED = np.iinfo(np.int32).max
 CACHE_EXAMPLES = torch.cuda.is_available() and os.getenv("CACHE_EXAMPLES", "1") == "1"
@@ -44,6 +43,7 @@ ENABLE_CPU_OFFLOAD = os.getenv("ENABLE_CPU_OFFLOAD", "0") == "1"
 DEMO_PORT = int(os.getenv("DEMO_PORT", "15432"))
 os.environ["GRADIO_EXAMPLES_CACHE"] = "./.gradio/cache"
 COUNTER_DB = os.getenv("COUNTER_DB", ".count.db")
+INFER_SPEED = 0
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -112,52 +112,6 @@ DEFAULT_STYLE_NAME = "(No style)"
 SCHEDULE_NAME = ["Flow_DPM_Solver"]
 DEFAULT_SCHEDULE_NAME = "Flow_DPM_Solver"
 NUM_IMAGES_PER_PROMPT = 1
-INFER_SPEED = 0
-
-
-def norm_ip(img, low, high):
-    img.clamp_(min=low, max=high)
-    img.sub_(low).div_(max(high - low, 1e-5))
-    return img
-
-
-def open_db():
-    db = sqlite3.connect(COUNTER_DB)
-    db.execute("CREATE TABLE IF NOT EXISTS counter(app CHARS PRIMARY KEY UNIQUE, value INTEGER)")
-    db.execute('INSERT OR IGNORE INTO counter(app, value) VALUES("Sana", 0)')
-    return db
-
-
-def read_inference_count():
-    with open_db() as db:
-        cur = db.execute('SELECT value FROM counter WHERE app="Sana"')
-        db.commit()
-    return cur.fetchone()[0]
-
-
-def write_inference_count(count):
-    count = max(0, int(count))
-    with open_db() as db:
-        db.execute(f'UPDATE counter SET value=value+{count} WHERE app="Sana"')
-        db.commit()
-
-
-def run_inference(num_imgs=1):
-    write_inference_count(num_imgs)
-    count = read_inference_count()
-
-    return (
-        f"<span style='font-size: 16px; font-weight: bold;'>Total inference runs: </span><span style='font-size: "
-        f"16px; color:red; font-weight: bold;'>{count}</span>"
-    )
-
-
-def update_inference_count():
-    count = read_inference_count()
-    return (
-        f"<span style='font-size: 16px; font-weight: bold;'>Total inference runs: </span><span style='font-size: "
-        f"16px; color:red; font-weight: bold;'>{count}</span>"
-    )
 
 
 def apply_style(style_name: str, positive: str, negative: str = "") -> tuple[str, str]:
@@ -169,29 +123,14 @@ def apply_style(style_name: str, positive: str, negative: str = "") -> tuple[str
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, help="config")
     parser.add_argument(
         "--model_path",
         nargs="?",
-        default="hf://Efficient-Large-Model/Sana_1600M_1024px/checkpoints/Sana_1600M_1024px.pth",
+        default="Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers",
         type=str,
         help="Path to the model file (positional)",
     )
-    parser.add_argument("--output", default="./", type=str)
-    parser.add_argument("--bs", default=1, type=int)
-    parser.add_argument("--image_size", default=1024, type=int)
-    parser.add_argument("--cfg_scale", default=5.0, type=float)
-    parser.add_argument("--pag_scale", default=2.0, type=float)
-    parser.add_argument("--seed", default=42, type=int)
-    parser.add_argument("--step", default=-1, type=int)
-    parser.add_argument("--custom_image_size", default=None, type=int)
     parser.add_argument("--share", action="store_true")
-    parser.add_argument(
-        "--shield_model_path",
-        type=str,
-        help="The path to shield model, we employ ShieldGemma-2B by default.",
-        default="google/shieldgemma-2b",
-    )
 
     return parser.parse_known_args()[0]
 
@@ -199,18 +138,17 @@ def get_args():
 args = get_args()
 
 if torch.cuda.is_available():
-    model_path = args.model_path
-    pipe = SanaPipeline(args.config)
-    pipe.from_pretrained(model_path)
-    pipe.register_progress_bar(gr.Progress())
 
-    # safety checker
-    safety_checker_tokenizer = AutoTokenizer.from_pretrained(args.shield_model_path)
-    safety_checker_model = AutoModelForCausalLM.from_pretrained(
-        args.shield_model_path,
-        device_map="auto",
+    transformer = NunchakuSanaTransformer2DModel.from_pretrained("mit-han-lab/svdq-int4-sana-1600m")
+    pipe = SanaPipeline.from_pretrained(
+        "Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers",
+        transformer=transformer,
+        variant="bf16",
         torch_dtype=torch.bfloat16,
     ).to(device)
+
+    pipe.text_encoder.to(torch.bfloat16)
+    pipe.vae.to(torch.bfloat16)
 
 
 def save_image_sana(img, seed="", save_img=False):
@@ -244,30 +182,23 @@ def generate(
     height: int = 1024,
     width: int = 1024,
     flow_dpms_guidance_scale: float = 5.0,
-    flow_dpms_pag_guidance_scale: float = 2.0,
     flow_dpms_inference_steps: int = 20,
     randomize_seed: bool = False,
 ):
     global INFER_SPEED
     # seed = 823753551
-    box = run_inference(num_imgs)
     seed = int(randomize_seed_fn(seed, randomize_seed))
     generator = torch.Generator(device=device).manual_seed(seed)
-    print(f"PORT: {DEMO_PORT}, model_path: {model_path}")
-    if safety_check.is_dangerous(safety_checker_tokenizer, safety_checker_model, prompt, threshold=0.2):
-        prompt = "A red heart."
+    print(f"PORT: {DEMO_PORT}, model_path: {args.model_path}")
 
     print(prompt)
 
     num_inference_steps = flow_dpms_inference_steps
     guidance_scale = flow_dpms_guidance_scale
-    pag_guidance_scale = flow_dpms_pag_guidance_scale
 
     if not use_negative_prompt:
         negative_prompt = None  # type: ignore
     prompt, negative_prompt = apply_style(style, prompt, negative_prompt)
-
-    pipe.progress_fn(0, desc="Sana Start")
 
     time_start = time.time()
     images = pipe(
@@ -276,13 +207,10 @@ def generate(
         width=width,
         negative_prompt=negative_prompt,
         guidance_scale=guidance_scale,
-        pag_guidance_scale=pag_guidance_scale,
         num_inference_steps=num_inference_steps,
         num_images_per_prompt=num_imgs,
         generator=generator,
-    )
-
-    pipe.progress_fn(1.0, desc="Sana End")
+    ).images
     INFER_SPEED = (time.time() - time_start) / num_imgs
 
     save_img = False
@@ -290,19 +218,7 @@ def generate(
         img = [save_image_sana(img, seed, save_img=save_image) for img in images]
         print(img)
     else:
-        img = [
-            Image.fromarray(
-                norm_ip(img, -1, 1)
-                .mul(255)
-                .add_(0.5)
-                .clamp_(0, 255)
-                .permute(1, 2, 0)
-                .to("cpu", torch.uint8)
-                .numpy()
-                .astype(np.uint8)
-            )
-            for img in images
-        ]
+        img = images
 
     torch.cuda.empty_cache()
 
@@ -310,22 +226,17 @@ def generate(
         img,
         seed,
         f"<span style='font-size: 16px; font-weight: bold;'>Inference Speed: {INFER_SPEED:.3f} s/Img</span>",
-        box,
     )
 
 
 model_size = "1.6" if "1600M" in args.model_path else "0.6"
 title = f"""
     <div style='display: flex; align-items: center; justify-content: center; text-align: center;'>
-        <img src="https://raw.githubusercontent.com/NVlabs/Sana/refs/heads/main/asset/logo.png" width="50%" alt="logo"/>
+        <img src="https://raw.githubusercontent.com/NVlabs/Sana/refs/heads/main/asset/logo.png" width="30%" alt="logo"/>
     </div>
 """
 DESCRIPTION = f"""
-        <p><span style="font-size: 36px; font-weight: bold;">Sana-{model_size}B</span><span style="font-size: 20px; font-weight: bold;">{args.image_size}px</span></p>
-        <p style="font-size: 16px; font-weight: bold;">Sana: Efficient High-Resolution Image Synthesis with Linear Diffusion Transformer</p>
-        <p><span style="font-size: 16px;"><a href="https://arxiv.org/abs/2410.10629">[Paper]</a></span> <span style="font-size: 16px;"><a href="https://github.com/NVlabs/Sana">[Github]</a></span> <span style="font-size: 16px;"><a href="https://nvlabs.github.io/Sana">[Project]</a></span</p>
-        <p style="font-size: 16px; font-weight: bold;">Powered by <a href="https://hanlab.mit.edu/projects/dc-ae">DC-AE</a> with 32x latent space, </p>running on node {socket.gethostname()}.
-        <p style="font-size: 16px; font-weight: bold;">Unsafe word will give you a 'Red Heart' in the image instead.</p>
+        <p style="font-size: 30px; font-weight: bold; text-align: center;">Sana: Efficient High-Resolution Image Synthesis with Linear Diffusion Transformer (4bit version)</p>
         """
 if model_size == "0.6":
     DESCRIPTION += "\n<p>0.6B model's text rendering ability is limited.</p>"
@@ -347,10 +258,11 @@ examples = [
 ]
 
 css = """
-.gradio-container{max-width: 640px !important}
-h1{text-align:center}
+.gradio-container {max-width: 850px !important; height: auto !important;}
+h1 {text-align: center;}
 """
-with gr.Blocks(css=css, title="Sana") as demo:
+theme = gr.themes.Base()
+with gr.Blocks(css=css, theme=theme, title="Sana") as demo:
     gr.Markdown(title)
     gr.HTML(DESCRIPTION)
     gr.DuplicateButton(
@@ -358,10 +270,6 @@ with gr.Blocks(css=css, title="Sana") as demo:
         elem_id="duplicate-button",
         visible=os.getenv("SHOW_DUPLICATE_BUTTON") == "1",
     )
-    info_box = gr.Markdown(
-        value=f"<span style='font-size: 16px; font-weight: bold;'>Total inference runs: </span><span style='font-size: 16px; color:red; font-weight: bold;'>{read_inference_count()}</span>"
-    )
-    demo.load(fn=update_inference_count, outputs=info_box)  # update the value when re-loading the page
     # with gr.Row(equal_height=False):
     with gr.Group():
         with gr.Row():
@@ -373,7 +281,14 @@ with gr.Blocks(css=css, title="Sana") as demo:
                 container=False,
             )
             run_button = gr.Button("Run", scale=0)
-        result = gr.Gallery(label="Result", show_label=False, columns=NUM_IMAGES_PER_PROMPT, format="png")
+        result = gr.Gallery(
+            label="Result",
+            show_label=False,
+            height=750,
+            columns=NUM_IMAGES_PER_PROMPT,
+            format="jpeg",
+        )
+
     speed_box = gr.Markdown(
         value=f"<span style='font-size: 16px; font-weight: bold;'>Inference speed: {INFER_SPEED} s/Img</span>"
     )
@@ -385,14 +300,14 @@ with gr.Blocks(css=css, title="Sana") as demo:
                     minimum=256,
                     maximum=MAX_IMAGE_SIZE,
                     step=32,
-                    value=args.image_size,
+                    value=1024,
                 )
                 width = gr.Slider(
                     label="Width",
                     minimum=256,
                     maximum=MAX_IMAGE_SIZE,
                     step=32,
-                    value=args.image_size,
+                    value=1024,
                 )
             with gr.Row():
                 flow_dpms_inference_steps = gr.Slider(
@@ -408,13 +323,6 @@ with gr.Blocks(css=css, title="Sana") as demo:
                     maximum=10,
                     step=0.1,
                     value=4.5,
-                )
-                flow_dpms_pag_guidance_scale = gr.Slider(
-                    label="PAG Guidance scale",
-                    minimum=1,
-                    maximum=4,
-                    step=0.5,
-                    value=1.0,
                 )
             with gr.Row():
                 use_negative_prompt = gr.Checkbox(label="Use negative prompt", value=False, visible=True)
@@ -490,11 +398,10 @@ with gr.Blocks(css=css, title="Sana") as demo:
             height,
             width,
             flow_dpms_guidance_scale,
-            flow_dpms_pag_guidance_scale,
             flow_dpms_inference_steps,
             randomize_seed,
         ],
-        outputs=[result, seed, speed_box, info_box],
+        outputs=[result, seed, speed_box],
         api_name="run",
     )
 
